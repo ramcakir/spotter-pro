@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function SettingsModal({ open, onClose, settings, onUpdate, onReset }: Props) {
-  const { customSounds, uploadSound, removeSound, hasCustomSound, isUploading } = useCustomSounds()
+  const { customSounds, uploadSound, removeSound, hasCustomSound, isUploading, isLoading } = useCustomSounds()
   const [activeUpload, setActiveUpload] = useState<string | null>(null)
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
@@ -43,9 +43,9 @@ export function SettingsModal({ open, onClose, settings, onUpdate, onReset }: Pr
     }
   }
 
-  const handleRemoveSound = (target: string) => {
+  const handleRemoveSound = async (target: string) => {
     if (confirm(`Remove custom sound for ${target}?`)) {
-      removeSound(target)
+      await removeSound(target)
     }
   }
 
@@ -89,6 +89,15 @@ export function SettingsModal({ open, onClose, settings, onUpdate, onReset }: Pr
         {/* Custom Sound Uploaders */}
         <div className="mb-6">
           <p className="text-sm font-medium mb-3 text-slate-600">Custom Sounds (Optional)</p>
+          
+          {/* Loading State */}
+          {isLoading && (
+            <div className="text-xs text-slate-400 bg-slate-50 p-3 rounded-lg mb-3 flex items-center gap-2">
+              <span className="animate-pulse">⏳</span>
+              Loading custom sounds...
+            </div>
+          )}
+          
           <div className="space-y-3">
             {TARGETS.map(target => (
               <div key={target.key} className="bg-white rounded-xl p-3 border border-slate-200">
@@ -107,7 +116,11 @@ export function SettingsModal({ open, onClose, settings, onUpdate, onReset }: Pr
                   )}
                 </div>
                 
-                {hasCustomSound(target.key) ? (
+                {isLoading ? (
+                  <div className="text-xs text-slate-400 bg-slate-50 p-2 rounded animate-pulse">
+                    Loading...
+                  </div>
+                ) : hasCustomSound(target.key) ? (
                   <div className="text-xs text-slate-500 bg-slate-50 p-2 rounded">
                     ✓ Using: <em>{customSounds[target.key]?.name}</em>
                   </div>
@@ -122,7 +135,7 @@ export function SettingsModal({ open, onClose, settings, onUpdate, onReset }: Pr
                   accept="audio/*"
                   ref={el => fileInputRefs.current[target.key] = el}
                   onChange={(e) => handleFileSelect(target.key, e)}
-                  disabled={isUploading === target.key}
+                  disabled={isUploading === target.key || isLoading}
                   className="mt-2 w-full text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[#ec5b2c] file:text-white hover:file:bg-orange-600 transition disabled:opacity-50"
                 />
                 {isUploading === target.key && (
@@ -132,7 +145,7 @@ export function SettingsModal({ open, onClose, settings, onUpdate, onReset }: Pr
             ))}
           </div>
           <p className="text-xs text-slate-400 mt-2">
-            💡 Tip: Short clips (1-3 seconds) work best. Max 5MB per file.
+            💡 Tip: Short clips (1-3 seconds) work best. Max 10MB per file.
           </p>
         </div>
 
