@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - run: npm install  # 👈 Changed from 'npm ci' to 'npm install'
+      - run: npm install
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
@@ -32,3 +32,5 @@ jobs:
       - uses: actions/configure-pages@v4
       - uses: actions/deploy-pages@v4
         id: deploy
+        with:
+          enablement: true  # 👈 ADD THIS LINE
