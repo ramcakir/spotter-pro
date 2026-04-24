@@ -12,7 +12,6 @@ export function useAudioEngine(props?: UseAudioEngineProps) {
 
   useEffect(() => {
     return () => {
-      // Clean up audio elements
       Object.values(audioElementsRef.current).forEach(audio => {
         audio.pause()
         audio.src = ''
@@ -24,41 +23,67 @@ export function useAudioEngine(props?: UseAudioEngineProps) {
   }, [])
 
   const play = useCallback((target: string) => {
-    // Check for custom sound first
+    console.log(`[AudioEngine] play() called for: ${target}`)
+    
+    // 1. Check for custom sound FIRST
     if (props?.hasCustomSound?.(target)) {
+      console.log(`[AudioEngine] Custom sound found for ${target}`)
       const customSound = props.getCustomSound?.(target)
+      
       if (customSound?.dataUrl) {
+        console.log(`[AudioEngine] Playing custom sound: ${customSound.name}`)
+        
         // Clean up previous audio for this target
         if (audioElementsRef.current[target]) {
           audioElementsRef.current[target].pause()
+          audioElementsRef.current[target].src = ''
         }
 
         // Create new audio element
         const audio = new Audio(customSound.dataUrl)
         audio.volume = 0.8
+        audio.preload = 'auto'
         audioElementsRef.current[target] = audio
         
-        // Play the audio
-        audio.play().catch(err => {
-          console.error(`Failed to play custom sound for ${target}:`, err)
-          // Fallback to synthesized sound
-          playSynthesized(target)
-        })
-        return
+        // Play with proper error handling
+        const playPromise = audio.play()
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log(`[AudioEngine] Custom sound playing: ${target}`)
+            })
+            .catch(err => {
+              console.error(`[AudioEngine] Failed to play custom sound for ${target}:`, err)
+              // Fallback to synthesized
+              console.log(`[AudioEngine] Falling back to synthesized sound for ${target}`)
+              playSynthesized(target)
+            })
+        }
+        return // Exit early - don't play synthesized version
+      } else {
+        console.warn(`[AudioEngine] Custom sound exists but no dataUrl for ${target}`)
       }
+    } else {
+      console.log(`[AudioEngine] No custom sound for ${target}, using synthesized`)
     }
 
-    // Use synthesized sound
+    // 2. Fallback to synthesized sound
     playSynthesized(target)
   }, [props])
 
-  // Synthesized sound engine (same as before)
+  // Synthesized sound engine
   const playSynthesized = (target: string) => {
     if (!ctxRef.current) {
       ctxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
     }
     const ctx = ctxRef.current
-    if (ctx.state === 'suspended') ctx.resume()
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        console.log('[AudioEngine] AudioContext resumed')
+      }).catch(err => {
+        console.error('[AudioEngine] Failed to resume AudioContext:', err)
+      })
+    }
     const now = ctx.currentTime
 
     const tone = (freq: number, type: OscillatorType, start: number, dur: number, vol = 0.3, filterFreq?: number) => {
@@ -119,7 +144,6 @@ export function useAudioEngine(props?: UseAudioEngineProps) {
           osc.stop(now + t + 0.12)
         })
         break
-
       case 'dog':
         [0, 0.18].forEach((t) => {
           tone(120, 'square', t, 0.14, 0.35, 600)
@@ -127,7 +151,6 @@ export function useAudioEngine(props?: UseAudioEngineProps) {
           noise(t, 0.12, 0.15)
         })
         break
-
       case 'person':
         [0, 0.35].forEach((t, i) => {
           const f = i === 0 ? 659.25 : 523.25
@@ -136,7 +159,6 @@ export function useAudioEngine(props?: UseAudioEngineProps) {
           tone(f * 3.5, 'sine', t, 0.08, 0.05)
         })
         break
-
       case 'bicycle':
         [0, 0.25].forEach(t => {
           tone(2400, 'sine', t, 0.15, 0.35, 3000)
@@ -144,13 +166,11 @@ export function useAudioEngine(props?: UseAudioEngineProps) {
           tone(7200, 'sine', t, 0.06, 0.08, 6000)
         })
         break
-
       case 'car':
         tone(330, 'sawtooth', 0, 0.45, 0.35, 800)
         tone(415.3, 'sawtooth', 0, 0.45, 0.35, 800)
         tone(331.5, 'square', 0.02, 0.4, 0.15, 600)
         break
-
       case 'motorcycle':
         {
           const revOsc1 = ctx.createOscillator()
@@ -180,7 +200,6 @@ export function useAudioEngine(props?: UseAudioEngineProps) {
           noise(0, 0.6, 0.12)
         }
         break
-
       default:
         [0, 0.25, 0.5].forEach(t => {
           tone(880, 'square', t, 0.08, 0.2)
