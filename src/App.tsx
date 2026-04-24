@@ -9,7 +9,9 @@ import { InstallPrompt } from './components/InstallPrompt'
 export default function App() {
   const { settings, update, reset } = useSettings()
   const { customSounds, hasCustomSound, getCustomSound } = useCustomSounds()
-  const { play } = useAudioEngine({ getCustomSound, hasCustomSound })
+  const { play } = useAudioEngine({ 
+  getCustomSound: (target: string) => getCustomSound(target as any),
+  hasCustomSound: (target: string) => hasCustomSound(target as any)})
   const [running, setRunning] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
