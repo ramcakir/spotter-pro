@@ -35,7 +35,7 @@ export default function App() {
     <div className="flex-1 flex flex-col p-4 max-w-lg mx-auto w-full">
       <header className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#ec5b2c] tracking-tight">Spotter</h1>
+          <h1 className="text-2xl font-bold text-[#ec5b2c] tracking-tight">Spotter Pro</h1>
           <p className="text-sm text-slate-500">
             Watching for: {settings.targets.length ? settings.targets.join(', ') : 'nothing'}
           </p>
