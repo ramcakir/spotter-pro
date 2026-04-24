@@ -3,17 +3,19 @@ import { useSettings } from './hooks/useSettings'
 import { useAudioEngine } from './hooks/useAudioEngine'
 import { useCustomSounds } from './hooks/useCustomSounds'
 import { useCameraDetection } from './hooks/useCameraDetection'
+import { useWakeLock } from './hooks/useWakeLock'
 import { SettingsModal } from './components/SettingsModal'
 import { InstallPrompt } from './components/InstallPrompt'
 
 export default function App() {
   const { settings, update, reset } = useSettings()
   const { customSounds, hasCustomSound, getCustomSound } = useCustomSounds()
-  const { play } = useAudioEngine({ 
-  getCustomSound: (target: string) => getCustomSound(target as any),
-  hasCustomSound: (target: string) => hasCustomSound(target as any)})
+  const { play } = useAudioEngine({ getCustomSound, hasCustomSound })
   const [running, setRunning] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+
+  // Prevent screen from sleeping while camera is active
+  useWakeLock(running)
 
   const handleHit = useCallback((label: string) => {
     play(label)
