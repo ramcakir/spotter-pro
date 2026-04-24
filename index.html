@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-[#faf6f2] text-slate-900">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#ec5b2c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <!-- Use ./ for public assets so they work with /spotter/ base path -->
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Spotter</title>
+</head>
+<body class="min-h-screen flex flex-col font-[Inter]">
+  <div id="root"></div>
+  <!-- Vite entry point (Vite handles the /spotter/ prefix automatically) -->
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
